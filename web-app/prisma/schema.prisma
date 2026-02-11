@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  config    UserConfig?
+  usage     DailyUsage[]
+}
+
+model UserConfig {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+
+  required    String   // CSV: "plantão,clínica"
+  interest    String   // CSV
+  blocked     String   // CSV
+
+  responseText String
+  responseMode String  // "GROUP" | "PRIVATE"
+
+  botEnabled  Boolean  @default(false)
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model DailyUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String   // YYYY-MM-DD
+  replies   Int      @default(0)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
